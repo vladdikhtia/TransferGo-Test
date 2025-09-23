@@ -1,0 +1,17 @@
+//
+//  TransferGo_TaskApp.swift
+//  TransferGo-Task
+//
+//  Created by Vladyslav Dikhtiaruk on 23/09/2025.
+//
+
+import SwiftUI
+
+@main
+struct TransferGo_TaskApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
+}
