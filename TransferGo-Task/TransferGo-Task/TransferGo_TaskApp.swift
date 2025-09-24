@@ -11,7 +11,7 @@ import SwiftUI
 struct TransferGo_TaskApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ConverterView()
         }
     }
 }

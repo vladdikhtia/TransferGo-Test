@@ -13,4 +13,18 @@ final class ConverterViewModel: ObservableObject {
     @Published var tempCurrency: Currencies = .pln
     @Published var fromAmountStr: String = "100.00"
     @Published var toAmountStr: String = "753.00"
+    @Published var isSheetPresented: Bool = false
+    @Published var isFrom: Bool = true
+}
+
+// sheet
+extension ConverterViewModel {
+    func changeCurrency(currency: Currencies) {
+        if isFrom {
+            fromCurrency = currency
+        } else {
+            toCurrency = currency
+        }
+        isSheetPresented = false
+    }
 }

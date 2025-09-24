@@ -5,14 +5,14 @@
 //  Created by Vladyslav Dikhtiaruk on 23/09/2025.
 //
 enum Currencies: String, CaseIterable {
-    case eur, pln, gbp, uah
+    case pln, eur, gbp, uah
     
     var country: String {
         switch self {
-        case .eur:
-            return "Germany"
         case .pln:
             return "Poland"
+        case .eur:
+            return "Germany"
         case .gbp:
             return "Great Britain"
         case .uah:
@@ -21,10 +21,10 @@ enum Currencies: String, CaseIterable {
     }
     var name: String {
         switch self {
-        case .eur:
-            return "Euro"
         case .pln:
             return "Polish zloty"
+        case .eur:
+            return "Euro"
         case .gbp:
             return "British Pound"
         case .uah:
@@ -34,10 +34,10 @@ enum Currencies: String, CaseIterable {
     }
     var flag: String {
         switch self {
-        case .eur:
-            return "DE-L"
         case .pln:
             return "PL-L"
+        case .eur:
+            return "DE-L"
         case .gbp:
             return "GB-L"
         case .uah:
@@ -61,9 +61,12 @@ struct ConverterView: View {
                 .padding(.bottom, 17)
         }
         .padding(.horizontal, 20)
+        .sheet(isPresented: $viewModel.isSheetPresented) {
+            CountriesListSheet(viewModel: viewModel)            .presentationDragIndicator(.visible)
+        }
     }
     
-    func fromAndToSections(isFrom: Bool) -> some View {
+    private func fromAndToSections(isFrom: Bool) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 8) {
                 Text(isFrom ? "Sending from" : "Receiver gets")
@@ -78,6 +81,10 @@ struct ConverterView: View {
                         .foregroundStyle(.gray)
                         .imageScale(.small)
                         .fontWeight(.semibold)
+                }
+                .onTapGesture {
+                    viewModel.isFrom = isFrom
+                    viewModel.isSheetPresented = true
                 }
             }
             Spacer()
@@ -120,7 +127,7 @@ struct ConverterView: View {
                     .background(.blue)
                     .clipShape(.circle)
             }
-            .padding(.trailing, 240)
+            .padding(.trailing, 250)
             
             Text("1 \(viewModel.fromCurrency.rawValue.uppercased()) = 7.23 \(viewModel.toCurrency.rawValue.uppercased())")
                 .customText(font: .bodyXSBold, color: .white)
