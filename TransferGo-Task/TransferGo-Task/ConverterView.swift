@@ -8,14 +8,24 @@
 import SwiftUI
 
 struct ConverterView: View {
-    @StateObject var viewModel = ConverterViewModel()
+    @StateObject var viewModel: ConverterViewModel
+    @State private var pendingWorkItem: DispatchWorkItem?
+    @FocusState private var isFromFocused: Bool
+    @FocusState private var isToFocused: Bool
+
+    init(networkManager: NetworkProtocol) {
+        self._viewModel = StateObject(wrappedValue: ConverterViewModel(networkManager: networkManager))
+    }
    
     var body: some View {
         VStack{
             ZStack(alignment: .center) {
                 VStack(spacing: 0) {
                     fromAndToSections(isFrom: true)
+                        .focused($isFromFocused)
                     fromAndToSections(isFrom: false)
+                        .focused($isToFocused)
+
                 }
                 overContent
                     .padding(.bottom, 17)
@@ -32,6 +42,39 @@ struct ConverterView: View {
         .sheet(isPresented: $viewModel.isSheetPresented) {
             CountriesListSheet(viewModel: viewModel)
                 .presentationDragIndicator(.visible)
+        }
+        .onChange(of: viewModel.fromAmountStr) { _, newValue in
+            guard isFromFocused else { return }
+            viewModel.debounceFetch(amountStr: newValue, isFrom: true)
+        }
+
+        .onChange(of: viewModel.toAmountStr) { _, newValue in
+            guard isToFocused else { return }
+            viewModel.debounceFetch(amountStr: newValue, isFrom: false)
+        }
+        .onChange(of: viewModel.fromCurrency, { oldValue, newValue in
+            Task {
+                await viewModel.fetchValue(amount: Double(viewModel.fromAmountStr) ?? 0, isFrom: true)
+            }
+        })
+        .onChange(of: viewModel.toCurrency, { oldValue, newValue in
+            Task {
+                await viewModel.fetchValue(amount: Double(viewModel.fromAmountStr) ?? 0, isFrom: true)
+            }
+        })
+        .task {
+            await viewModel.fetchValue(amount: Double(viewModel.fromAmountStr) ?? 0, isFrom: true)
+        }
+        .toolbar {
+            ToolbarItem(placement: .keyboard) {
+                if isToFocused || isFromFocused {
+                    Button("Done") {
+                        isFromFocused = false
+                        isToFocused = false
+                    }
+                }
+                
+            }
         }
     }
     
@@ -61,7 +104,8 @@ struct ConverterView: View {
                 .customText(font: .headingL, color: isFrom ? .blue : .black)
                 .fixedSize()
                 .keyboardType(.decimalPad)
-                .tint(.clear)
+                .tint(.blue.opacity(0.6))
+                .maxLengthDecimal(isFrom ? $viewModel.fromAmountStr : $viewModel.toAmountStr, 8)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 16)
@@ -102,7 +146,7 @@ struct ConverterView: View {
             }
             .padding(.trailing, 250)
             
-            Text("1 \(viewModel.fromCurrency.rawValue.uppercased()) = 7.23 \(viewModel.toCurrency.rawValue.uppercased())")
+            Text("1 \(viewModel.fromCurrency.rawValue.uppercased()) = \(viewModel.rate, format: .number.precision(.fractionLength(2))) \(viewModel.toCurrency.rawValue.uppercased())")
                 .customText(font: .bodyXSBold, color: .white)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
@@ -129,5 +173,5 @@ struct ConverterView: View {
 }
 
 #Preview {
-    ConverterView()
+    ConverterView(networkManager: NetworkManager())
 }

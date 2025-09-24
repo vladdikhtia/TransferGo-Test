@@ -60,5 +60,5 @@ struct CountriesListSheet: View {
 }
 
 #Preview {
-    CountriesListSheet(viewModel: ConverterViewModel())
+    CountriesListSheet(viewModel: ConverterViewModel(networkManager: NetworkManager()))
 }
