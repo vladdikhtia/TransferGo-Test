@@ -37,7 +37,7 @@ struct CountriesListSheet: View {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(currency.country)
                                         .customText(font: .bodyMBold, color: .black)
-                                    Text(currency.name + " . " +  currency.rawValue.uppercased())
+                                    Text(currency.name + " • " +  currency.rawValue.uppercased())
                                         .font(.bodyMRegular)
                                 }
                                 .foregroundStyle(Color(red: 0.42, green: 0.45, blue: 0.48))

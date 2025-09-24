@@ -4,47 +4,6 @@
 //
 //  Created by Vladyslav Dikhtiaruk on 23/09/2025.
 //
-enum Currencies: String, CaseIterable {
-    case pln, eur, gbp, uah
-    
-    var country: String {
-        switch self {
-        case .pln:
-            return "Poland"
-        case .eur:
-            return "Germany"
-        case .gbp:
-            return "Great Britain"
-        case .uah:
-            return "Ukraine"
-        }
-    }
-    var name: String {
-        switch self {
-        case .pln:
-            return "Polish zloty"
-        case .eur:
-            return "Euro"
-        case .gbp:
-            return "British Pound"
-        case .uah:
-            return "Hrivna"
-
-        }
-    }
-    var flag: String {
-        switch self {
-        case .pln:
-            return "PL-L"
-        case .eur:
-            return "DE-L"
-        case .gbp:
-            return "GB-L"
-        case .uah:
-            return "UA-L"
-        }
-    }
-}
 
 import SwiftUI
 
@@ -52,17 +11,27 @@ struct ConverterView: View {
     @StateObject var viewModel = ConverterViewModel()
    
     var body: some View {
-        ZStack(alignment: .center) {
-            VStack(spacing: 0) {
-                fromAndToSections(isFrom: true)
-                fromAndToSections(isFrom: false)
+        VStack{
+            ZStack(alignment: .center) {
+                VStack(spacing: 0) {
+                    fromAndToSections(isFrom: true)
+                    fromAndToSections(isFrom: false)
+                }
+                overContent
+                    .padding(.bottom, 17)
             }
-            overContent
-                .padding(.bottom, 17)
+            .padding(.top, 80)
+            
+            if viewModel.isFrom, viewModel.isLimitReached {
+                limitAlert
+            }
+            Spacer()
         }
+        .animation(.easeIn, value: viewModel.isLimitReached)
         .padding(.horizontal, 20)
         .sheet(isPresented: $viewModel.isSheetPresented) {
-            CountriesListSheet(viewModel: viewModel)            .presentationDragIndicator(.visible)
+            CountriesListSheet(viewModel: viewModel)
+                .presentationDragIndicator(.visible)
         }
     }
     
@@ -89,9 +58,10 @@ struct ConverterView: View {
             }
             Spacer()
             TextField("0", text: isFrom ? $viewModel.fromAmountStr : $viewModel.toAmountStr)
-                .customText(font: .headingL, color: .blue)
+                .customText(font: .headingL, color: isFrom ? .blue : .black)
                 .fixedSize()
                 .keyboardType(.decimalPad)
+                .tint(.clear)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 16)
@@ -109,15 +79,18 @@ struct ConverterView: View {
         .shadow(color: isFrom ? Color(red: 0, green: 0.1, blue: 0.25).opacity(0.16) : .clear, radius: 8, x: 0, y: 0)
         .zIndex(isFrom ? 1 : 0)
         .offset(y: !isFrom ? -17 : 0)
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .inset(by: 1)
+                .stroke(isFrom && viewModel.isLimitReached ? .red : .clear, lineWidth: 2)
+        }
     }
     
     var overContent: some View {
         Group{
             Button {
                 withAnimation {
-                    viewModel.tempCurrency = viewModel.fromCurrency
-                    viewModel.fromCurrency = viewModel.toCurrency
-                    viewModel.toCurrency = viewModel.tempCurrency
+                    viewModel.swapCurrencies()
                 }
             } label: {
                 Image(systemName: "arrow.up.arrow.down")
@@ -136,6 +109,22 @@ struct ConverterView: View {
                 .background(.black)
                 .clipShape(.rect(cornerRadius: 16))
         }
+    }
+    
+    var limitAlert: some View {
+        HStack(spacing: 8){
+            Image(systemName: "info.circle")
+                .resizable()
+                .frame(width: 14, height: 14)
+            
+            Text("Maximum sending amount: \(viewModel.fromCurrency.limitsForSending.formatted()) \(viewModel.fromCurrency.rawValue.uppercased())")
+                .customText(font: .bodySRegular, color: .red)
+        }
+        .foregroundStyle(.red)
+        .padding(8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.red.opacity(0.1))
+        .clipShape(.rect(cornerRadius: 8))
     }
 }
 
