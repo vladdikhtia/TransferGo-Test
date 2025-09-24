@@ -69,6 +69,13 @@ final class ConverterViewModel: ObservableObject {
     @Published var toAmountStr: String = "753.00"
     @Published var isSheetPresented: Bool = false
     @Published var isFrom: Bool = true
+    @Published var rate: Double = 0.0
+    
+    let networkManager: NetworkProtocol
+    
+    init(networkManager: NetworkProtocol) {
+        self.networkManager = networkManager
+    }
     
     var isLimitReached: Bool {
         if let amount = Double(fromAmountStr) {
@@ -83,7 +90,22 @@ final class ConverterViewModel: ObservableObject {
         toCurrency = tempCurrency
     }
 }
-
+// fetching
+extension ConverterViewModel {
+    @MainActor
+    func fetchValue(amount: Double) async {
+        guard amount < fromCurrency.limitsForSending else {
+            print("More than limit")
+            return
+        }
+        let fetchedValue = await networkManager.fetchValueFromAPI(from: fromCurrency, amount: amount, to: toCurrency)
+        guard let value = fetchedValue.amount, let rate = fetchedValue.rate else {
+            return
+        }
+        self.toAmountStr = String(format: "%.2f", value)
+        self.rate = rate
+    }
+}
 // sheet
 extension ConverterViewModel {
     func changeCurrency(currency: Currencies) {
