@@ -14,7 +14,6 @@ struct TransferGo_TaskApp: App {
         WindowGroup {
             NavigationStack {
                 ConverterView(networkManager: networkManager)
-
             }
         }
     }
