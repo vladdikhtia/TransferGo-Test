@@ -4,6 +4,47 @@
 //
 //  Created by Vladyslav Dikhtiaruk on 23/09/2025.
 //
+enum Currencies: String, CaseIterable {
+    case eur, pln, gbp, uah
+    
+    var country: String {
+        switch self {
+        case .eur:
+            return "Germany"
+        case .pln:
+            return "Poland"
+        case .gbp:
+            return "Great Britain"
+        case .uah:
+            return "Ukraine"
+        }
+    }
+    var name: String {
+        switch self {
+        case .eur:
+            return "Euro"
+        case .pln:
+            return "Polish zloty"
+        case .gbp:
+            return "British Pound"
+        case .uah:
+            return "Hrivna"
+
+        }
+    }
+    var flag: String {
+        switch self {
+        case .eur:
+            return "DE-L"
+        case .pln:
+            return "PL-L"
+        case .gbp:
+            return "GB-L"
+        case .uah:
+            return "UA-L"
+        }
+    }
+}
 
 import SwiftUI
 
@@ -11,7 +52,83 @@ struct ConverterView: View {
     @StateObject var viewModel = ConverterViewModel()
    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        ZStack(alignment: .center) {
+            VStack(spacing: 0) {
+                fromAndToSections(isFrom: true)
+                fromAndToSections(isFrom: false)
+            }
+            overContent
+                .padding(.bottom, 17)
+        }
+        .padding(.horizontal, 20)
+    }
+    
+    func fromAndToSections(isFrom: Bool) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(isFrom ? "Sending from" : "Receiver gets")
+                    .customText(font: .bodyMRegular, color: .gray)
+                
+                HStack(alignment: .center, spacing: 8) {
+                    Image(isFrom ? viewModel.fromCurrency.flag : viewModel.toCurrency.flag)
+                    Text(isFrom ? viewModel.fromCurrency.rawValue.uppercased() : viewModel.toCurrency.rawValue.uppercased())
+                        .customText(font: .bodyMBold, color: .black)
+
+                    Image(systemName: "chevron.down")
+                        .foregroundStyle(.gray)
+                        .imageScale(.small)
+                        .fontWeight(.semibold)
+                }
+            }
+            Spacer()
+            TextField("0", text: isFrom ? $viewModel.fromAmountStr : $viewModel.toAmountStr)
+                .customText(font: .headingL, color: .blue)
+                .fixedSize()
+                .keyboardType(.decimalPad)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 16)
+        .padding(.top, !isFrom ? 17 : 0)
+        .background(isFrom ? .white : Color(red: 0.93, green: 0.94, blue: 0.96))
+        .clipShape(
+            .rect(
+                topLeadingRadius: isFrom ? 16 :0,
+                bottomLeadingRadius: 16,
+                bottomTrailingRadius: 16,
+                topTrailingRadius: isFrom ? 16 :0,
+                style: .circular
+            )
+        )
+        .shadow(color: isFrom ? Color(red: 0, green: 0.1, blue: 0.25).opacity(0.16) : .clear, radius: 8, x: 0, y: 0)
+        .zIndex(isFrom ? 1 : 0)
+        .offset(y: !isFrom ? -17 : 0)
+    }
+    
+    var overContent: some View {
+        Group{
+            Button {
+                withAnimation {
+                    viewModel.tempCurrency = viewModel.fromCurrency
+                    viewModel.fromCurrency = viewModel.toCurrency
+                    viewModel.toCurrency = viewModel.tempCurrency
+                }
+            } label: {
+                Image(systemName: "arrow.up.arrow.down")
+                    .imageScale(.small)
+                    .foregroundStyle(.white)
+                    .padding(8)
+                    .background(.blue)
+                    .clipShape(.circle)
+            }
+            .padding(.trailing, 240)
+            
+            Text("1 \(viewModel.fromCurrency.rawValue.uppercased()) = 7.23 \(viewModel.toCurrency.rawValue.uppercased())")
+                .customText(font: .bodyXSBold, color: .white)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(.black)
+                .clipShape(.rect(cornerRadius: 16))
+        }
     }
 }
 
