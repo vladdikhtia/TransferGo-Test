@@ -12,7 +12,10 @@ struct TransferGo_TaskApp: App {
     let networkManager = NetworkManager()
     var body: some Scene {
         WindowGroup {
-            ConverterView(networkManager: networkManager)
+            NavigationStack {
+                ConverterView(networkManager: networkManager)
+
+            }
         }
     }
 }

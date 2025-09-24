@@ -71,6 +71,8 @@ final class ConverterViewModel: ObservableObject {
     @Published var isFrom: Bool = true
     @Published var rate: Double = 0.0
     
+    private var pendingWorkItem: DispatchWorkItem?
+    
     let networkManager: NetworkProtocol
     
     init(networkManager: NetworkProtocol) {
@@ -92,20 +94,40 @@ final class ConverterViewModel: ObservableObject {
 }
 // fetching
 extension ConverterViewModel {
+    func debounceFetch(amountStr: String, isFrom: Bool) {
+        pendingWorkItem?.cancel()
+        
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            Task {
+                await self.fetchValue(amount: Double(amountStr) ?? 0, isFrom: isFrom)
+            }
+        }
+        
+        pendingWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: workItem)
+    }
+    
     @MainActor
-    func fetchValue(amount: Double) async {
-        guard amount < fromCurrency.limitsForSending else {
-            print("More than limit")
-            return
+    func fetchValue(amount: Double, isFrom: Bool) async {
+        guard amount >= 0 else { return }
+
+        if isFrom {
+            guard amount < fromCurrency.limitsForSending else { return }
+            let fetchedValue = await networkManager.fetchValueFromAPI(from: fromCurrency, amount: amount, to: toCurrency)
+            guard let value = fetchedValue.amount, let rate = fetchedValue.rate else { return }
+            self.toAmountStr = String(format: "%.2f", value)
+            self.rate = rate
+        } else {
+            let fetchedValue = await networkManager.fetchValueFromAPI(from: toCurrency, amount: amount, to: fromCurrency)
+            guard let value = fetchedValue.amount, let rate = fetchedValue.rate else { return }
+            self.fromAmountStr = String(format: "%.2f", value)
+            guard rate > 0 else { return }
+            self.rate = 1 / rate
         }
-        let fetchedValue = await networkManager.fetchValueFromAPI(from: fromCurrency, amount: amount, to: toCurrency)
-        guard let value = fetchedValue.amount, let rate = fetchedValue.rate else {
-            return
-        }
-        self.toAmountStr = String(format: "%.2f", value)
-        self.rate = rate
     }
 }
+
 // sheet
 extension ConverterViewModel {
     func changeCurrency(currency: Currencies) {
