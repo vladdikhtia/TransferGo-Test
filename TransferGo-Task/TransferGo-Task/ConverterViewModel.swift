@@ -7,60 +7,6 @@
 
 import Foundation
 
-enum Currencies: String, CaseIterable {
-    case pln, eur, gbp, uah
-    
-    var country: String {
-        switch self {
-        case .pln:
-            return "Poland"
-        case .eur:
-            return "Germany"
-        case .gbp:
-            return "Great Britain"
-        case .uah:
-            return "Ukraine"
-        }
-    }
-    var name: String {
-        switch self {
-        case .pln:
-            return "Polish zloty"
-        case .eur:
-            return "Euro"
-        case .gbp:
-            return "British Pound"
-        case .uah:
-            return "Hrivna"
-
-        }
-    }
-    var flag: String {
-        switch self {
-        case .pln:
-            return "PL-L"
-        case .eur:
-            return "DE-L"
-        case .gbp:
-            return "GB-L"
-        case .uah:
-            return "UA-L"
-        }
-    }
-    var limitsForSending: Double {
-        switch self {
-        case .pln:
-            return 20000
-        case .eur:
-            return 5000
-        case .gbp:
-            return 1000
-        case .uah:
-            return 50000
-        }
-    }
-}
-
 final class ConverterViewModel: ObservableObject {
     @Published var fromCurrency: Currencies = .pln
     @Published var toCurrency: Currencies = .uah
@@ -70,6 +16,8 @@ final class ConverterViewModel: ObservableObject {
     @Published var isSheetPresented: Bool = false
     @Published var isFrom: Bool = true
     @Published var rate: Double = 0.0
+    
+    @Published var searchedCurrency: String = ""
     
     private var pendingWorkItem: DispatchWorkItem?
     
@@ -111,7 +59,7 @@ extension ConverterViewModel {
     @MainActor
     func fetchValue(amount: Double, isFrom: Bool) async {
         guard amount >= 0 else { return }
-
+        
         if isFrom {
             guard amount < fromCurrency.limitsForSending else { return }
             let fetchedValue = await networkManager.fetchValueFromAPI(from: fromCurrency, amount: amount, to: toCurrency)
@@ -137,5 +85,14 @@ extension ConverterViewModel {
             toCurrency = currency
         }
         isSheetPresented = false
+    }
+    var filteredCurrencies: [Currencies] {
+        guard !searchedCurrency.isEmpty else { return Currencies.allCases }
+        let lowercasedSearch = searchedCurrency.lowercased()
+        return Currencies.allCases.filter { currency in
+            currency.rawValue.lowercased().contains(lowercasedSearch) ||
+            currency.name.lowercased().contains(lowercasedSearch) ||
+            currency.country.lowercased().contains(lowercasedSearch)
+        }
     }
 }
