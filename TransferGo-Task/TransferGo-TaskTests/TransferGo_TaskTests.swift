@@ -1,35 +1,58 @@
-//
-//  TransferGo_TaskTests.swift
-//  TransferGo-TaskTests
-//
-//  Created by Vladyslav Dikhtiaruk on 24/09/2025.
-//
-
 import XCTest
 
-final class TransferGo_TaskTests: XCTestCase {
+final class TransferGoInterviewTasksTests: XCTestCase {
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+    /// Precondition -> Disable Predictive code completion
+    /// 1. Open Xcode -> Settings
+    /// 2. Click "Text Editing"
+    /// 3. Click "Editing"
+    /// 3. Unclick "Predictive code completion" checkbox
+
+    // Task 0: Create new branch "feature/interview-tasks"
+    // Switch to that branch and commit each task on this branch.
+    
+    // Task 1: **Dictionary values to Array**
+    func testDictionaryToSortedArray() throws {
+        let scores = ["Alice": 90, "Bob": 75, "Charlie": 85]
+        let myValues = scores.values.sorted {
+            $0 > $1
+        }
+        
+        XCTAssertEqual(Array(myValues), [90, 85, 75])
     }
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
+    //    Task 2: **Protocol ConformanceDescription**
+    //
+    //    1. Create a protocol `Vehicle` with a property `name` and a function `start()`.
+    //    2. Create two structs `Car` and `Bicycle` that conform to `Vehicle`.
+    //    3. `Car`’s `start()` should print `"Car {name} engine started"`.
+    //    4. `Bicycle`’s `start()` should print `"Bicycle {name} ready to ride"`.
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
+    protocol Vehicle {
+        var name: String { get }
+        func start()
     }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        measure {
-            // Put the code you want to measure the time of here.
+    
+    struct Car: Vehicle {
+        var name: String
+        
+        func start() {
+            print("Car \(name) engine started")
         }
     }
+    struct Bicycle: Vehicle {
+        var name: String
+        func start() {
+            print("Bicycle \(name) ready to ride")
+        }
+    }
+    
+    
+    func testCarAndBicicle() throws {
+        // Just example usage, no Units.
+    }
+    
+    // Task 3: Merge branch that you were on to main branch.
+    // Bonus: Explain what happens if there is a merge conflict and how you would resolve it.
 
 }
