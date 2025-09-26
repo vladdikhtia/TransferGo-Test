@@ -1,10 +1,3 @@
-//
-//  TransferGo_TaskTests.swift
-//  TransferGo-TaskTests
-//
-//  Created by Vladyslav Dikhtiaruk on 24/09/2025.
-//
-
 import XCTest
 
 final class TransferGoInterviewTasksTests: XCTestCase {
@@ -53,6 +46,7 @@ final class TransferGoInterviewTasksTests: XCTestCase {
             print("Bicycle \(name) ready to ride")
         }
     }
+    
     
     func testCarAndBicicle() throws {
         // Just example usage, no Units.
