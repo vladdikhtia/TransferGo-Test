@@ -35,6 +35,25 @@ final class TransferGoInterviewTasksTests: XCTestCase {
     //    3. `Car`’s `start()` should print `"Car {name} engine started"`.
     //    4. `Bicycle`’s `start()` should print `"Bicycle {name} ready to ride"`.
 
+    protocol Vehicle {
+        var name: String { get }
+        func start()
+    }
+    
+    struct Car: Vehicle {
+        var name: String
+        
+        func start() {
+            print("Car \(name) engine started")
+        }
+    }
+    struct Bicycle: Vehicle {
+        var name: String
+        func start() {
+            print("Bicycle \(name) ready to ride")
+        }
+    }
+    
     func testCarAndBicicle() throws {
         // Just example usage, no Units.
     }
