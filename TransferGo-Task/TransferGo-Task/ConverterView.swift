@@ -20,6 +20,7 @@ struct ConverterView: View {
     var body: some View {
         VStack{
             Text("Made chages in the repository")
+            Text("Made second chages in the repository")
             ZStack(alignment: .center) {
                 VStack(spacing: 0) {
                     fromAndToSections(isFrom: true)
